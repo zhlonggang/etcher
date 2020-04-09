@@ -87,7 +87,7 @@ export function setProgressState(
 
 			return null;
 		}),
-
+		avgSpeedCalc: bytesToMegabytes(state.speed),
 		totalSpeed: _.attempt(() => {
 			if (_.isFinite(state.totalSpeed)) {
 				return _.round(bytesToMegabytes(state.totalSpeed), PRECISION);

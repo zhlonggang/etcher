@@ -16,6 +16,7 @@
 
 import * as _ from 'lodash';
 import * as React from 'react';
+import { Txt } from 'rendition';
 import styled from 'styled-components';
 import { left, position, space, top } from 'styled-system';
 
@@ -34,7 +35,10 @@ export function FlashResults({
 	results,
 }: {
 	errors: string;
-	results: { devices: { failed: number; successful: number } };
+	results: {
+		averageSpeedValues: number[];
+		devices: { failed: number; successful: number };
+	};
 }) {
 	return (
 		<Div position="absolute" left="153px" top="66px">
@@ -42,7 +46,7 @@ export function FlashResults({
 				<span className="tick tick--success space-right-medium"></span>
 				<h3>Flash Complete!</h3>
 			</div>
-			<Div className="results" mt="11px" mr="0" mb="0" ml="40px">
+			<Div className="results" mr="0" mb="0" ml="40px">
 				{_.map(results.devices, (quantity, type) => {
 					return quantity ? (
 						<Underline
@@ -62,6 +66,16 @@ export function FlashResults({
 						</Underline>
 					) : null;
 				})}
+				<Txt
+					color="#787c7f"
+					fontSize="10px"
+					style={{
+						fontWeight: 500,
+						textAlign: 'center',
+					}}
+				>
+					Writing speed: {_.round(_.mean(results.averageSpeedValues), 1)} MB/s
+				</Txt>
 			</Div>
 		</Div>
 	);

@@ -73,6 +73,7 @@ const DEFAULT_STATE = Immutable.fromJS({
 		speed: null,
 		totalSpeed: null,
 	},
+	averageSpeedValues: [],
 });
 
 /**
@@ -263,7 +264,14 @@ function storeReducer(
 				});
 			}
 
-			return state.set('flashState', Immutable.fromJS(action.data));
+			const averageSpeedValues = state.get('averageSpeedValues').toJS();
+			if (!action.data.verifying && !_.isNull(action.data.avgSpeedCalc)) {
+				averageSpeedValues.push(action.data.avgSpeedCalc);
+			}
+
+			return state
+				.set('flashState', Immutable.fromJS(action.data))
+				.set('averageSpeedValues', Immutable.fromJS(averageSpeedValues));
 		}
 
 		case Actions.RESET_FLASH_STATE: {
@@ -325,6 +333,10 @@ function storeReducer(
 					title: `Invalid results errorCode: ${action.data.errorCode}`,
 				});
 			}
+
+			action.data.results.averageSpeedValues = state
+				.get('averageSpeedValues')
+				.toJS();
 
 			return state
 				.set('isFlashing', false)
