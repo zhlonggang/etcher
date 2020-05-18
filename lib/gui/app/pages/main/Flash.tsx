@@ -17,11 +17,14 @@
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as React from 'react';
-import { Modal, Txt } from 'rendition';
+import { Flex, Modal, Txt } from 'rendition';
 import * as constraints from '../../../../shared/drive-constraints';
 import * as messages from '../../../../shared/messages';
 import { DriveSelectorModal } from '../../components/drive-selector/DriveSelectorModal';
-import { ProgressButton } from '../../components/progress-button/progress-button';
+import {
+	ProgressButton,
+	ProgressButtonProps,
+} from '../../components/progress-button/progress-button';
 import { SourceOptions } from '../../components/source-selector/source-selector';
 import { SVGIcon } from '../../components/svg-icon/svg-icon';
 import * as availableDrives from '../../models/available-drives';
@@ -145,12 +148,9 @@ async function flashImageToDrive(
  * @example
  * const label = FlashController.getProgressButtonLabel()
  */
-const getProgressButtonLabel = () => {
-	if (!flashState.isFlashing()) {
-		return 'Flash!';
-	}
-
-	// TODO: no any
+const getProgressButtonLabel = (): {
+	status: ProgressButtonProps['label']['status'];
+} => {
 	return progressStatus.fromFlashState(flashState.getFlashState() as any);
 };
 
@@ -206,21 +206,22 @@ export const Flash = ({
 		}
 	};
 
-	const tryFlash = async () => {
-		const devices = selection.getSelectedDevices();
-		const image = selection.getImage();
-		const drives = _.filter(availableDrives.getDrives(), (drive: any) => {
-			return _.includes(devices, drive.device);
-		});
+	const devices = selection.getSelectedDevices();
+	const image = selection.getImage();
+	const drives = _.filter(availableDrives.getDrives(), (drive: any) => {
+		return _.includes(devices, drive.device);
+	});
 
+	const hasListWarnings = () => {
 		if (drives.length === 0 || flashState.isFlashing()) {
 			return;
 		}
 
-		const hasDangerStatus = constraints.hasListDriveImageCompatibilityStatus(
-			drives,
-			image,
-		);
+		return constraints.hasListDriveImageCompatibilityStatus(drives, image);
+	};
+
+	const tryFlash = async () => {
+		const hasDangerStatus = hasListWarnings();
 		if (hasDangerStatus) {
 			setWarningMessages(getWarningMessages(drives, image));
 			return;
@@ -228,6 +229,8 @@ export const Flash = ({
 
 		setErrorMessage(await flashImageToDrive(goToSuccess, source));
 	};
+
+	const progressLabel = getProgressButtonLabel();
 
 	return (
 		<>
@@ -239,35 +242,38 @@ export const Flash = ({
 					/>
 				</div>
 
-				<div className="space-vertical-large">
+				<div
+					className="space-vertical-large"
+					style={{
+						marginTop: progressLabel.status !== 'starting' ? '42px' : '',
+					}}
+				>
 					<StepSelection>
 						<ProgressButton
 							type={state.type}
 							active={isFlashing}
 							percentage={state.percentage}
-							label={getProgressButtonLabel()}
+							label={progressLabel}
 							disabled={Boolean(flashErrorCode) || shouldFlashStepBeDisabled}
 							callback={tryFlash}
+							onCancel={imageWriter.cancel}
+							warning={hasListWarnings()}
 						/>
 					</StepSelection>
 
-					{isFlashing && (
-						<button
-							className="button button-link button-abort-write"
-							onClick={imageWriter.cancel}
-						>
-							<span className="glyphicon glyphicon-remove-sign"></span>
-						</button>
-					)}
 					{!_.isNil(state.speed) && state.percentage !== COMPLETED_PERCENTAGE && (
-						<p className="step-footer step-footer-split">
+						<Flex
+							justifyContent="space-between"
+							fontSize="14px"
+							color="#7e8085"
+						>
 							{Boolean(state.speed) && (
-								<span>{`${state.speed.toFixed(SPEED_PRECISION)} MB/s`}</span>
+								<Txt>{state.speed.toFixed(SPEED_PRECISION)} MB/s</Txt>
 							)}
 							{!_.isNil(state.eta) && (
-								<span>{`ETA: ${formatSeconds(state.eta)}`}</span>
+								<Txt>ETA: {formatSeconds(state.eta)}</Txt>
 							)}
-						</p>
+						</Flex>
 					)}
 
 					{Boolean(state.failed) && (
