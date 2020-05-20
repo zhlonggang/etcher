@@ -76,13 +76,14 @@ async function createMainWindow() {
 		kiosk: fullscreen,
 		autoHideMenuBar: true,
 		titleBarStyle: 'hiddenInset',
-		icon: path.join(__dirname, '..', '..', 'assets', 'icon.png'),
+		icon: path.join(__dirname, '..', 'assets', 'icon.png'),
 		darkTheme: true,
 		webPreferences: {
 			backgroundThrottling: false,
 			nodeIntegration: true,
 			webviewTag: true,
 			zoomFactor: width / defaultWidth,
+			enableRemoteModule: true,
 		},
 	});
 

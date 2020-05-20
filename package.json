@@ -95,7 +95,7 @@
     "@types/tmp": "^0.2.0",
     "@types/webpack-node-externals": "^1.7.0",
     "chai": "^4.2.0",
-    "electron": "^8.3.0",
+    "electron": "9.0.0",
     "electron-builder": "^22.1.0",
     "electron-mocha": "^8.2.0",
     "electron-notarize": "^0.3.0",
